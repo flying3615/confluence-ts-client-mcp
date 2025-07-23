@@ -50,6 +50,23 @@ export interface ConfluencePage {
     /** Other body formats that might be available */
     _expandable?: Record<string, string>;
   };
+  /** Page metadata including labels */
+  metadata?: {
+    /** Page labels */
+    labels?: {
+      results: Array<{
+        /** Label prefix */
+        prefix: string;
+        /** Label name */
+        name: string;
+        /** Label ID */
+        id: string;
+      }>;
+      start?: number;
+      limit?: number;
+      size?: number;
+    };
+  };
   /** Page extensions */
   extensions?: Record<string, any>;
   /** Expandable content */

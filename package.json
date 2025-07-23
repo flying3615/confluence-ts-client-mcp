@@ -1,5 +1,5 @@
 {
-  "name": "confluence-ts-client",
+  "name": "@gabriel3615/confluence-ts-client-mcp",
   "version": "1.0.0",
   "type": "module",
   "main": "dist/index.js",

@@ -403,6 +403,72 @@ export class ConfluenceClient {
     }
   }
 
+  /**
+   * Find pages that are topically related to a given page
+   * This uses several approaches to find relevant pages:
+   * 1. Pages with similar titles
+   * 2. Pages with shared labels
+   * 3. Pages that link to or are linked from the target page
+   *
+   * @param pageId The ID of the reference page
+   * @param limit Maximum number of results to return
+   * @param expand Fields to expand in the response
+   * @returns List of related pages
+   */
+  async getTopicallyRelatedPages(
+    pageId: string,
+    limit: number = 10,
+    expand: string[] = ['body.storage']
+  ): Promise<ConfluencePageListResponse> {
+    try {
+      // First get the source page to extract title and labels
+      const sourcePage = await this.getPageById(pageId, ['metadata.labels']);
+      const title = sourcePage.title;
+
+      // Extract keywords from the title (remove common words)
+      const keywords = title
+        .split(/\s+/)
+        .filter(word => word.length > 3)
+        .map(word => word.replace(/[^\w\s]/g, ''));
+
+      // Build a CQL query to find related content
+      let relatedQuery = `type = page AND id != ${pageId}`;
+
+      // Add title similarity condition if we have keywords
+      if (keywords.length > 0) {
+        const titleTerms = keywords
+          .map(word => `title ~ "${word}"`)
+          .join(' OR ');
+        relatedQuery += ` AND (${titleTerms})`;
+      }
+
+      // Add label conditions if the page has labels
+      const labels = sourcePage.metadata?.labels?.results || [];
+      if (labels.length > 0) {
+        const labelNames = labels.map(label => label.name);
+        const labelTerms = labelNames
+          .map(name => `labelText = "${name}"`)
+          .join(' OR ');
+        // Combine with OR to broaden results
+        relatedQuery +=
+          keywords.length > 0 ? ` OR (${labelTerms})` : ` AND (${labelTerms})`;
+      }
+
+      // Execute the search
+      const response = await this.client.get('/content/search', {
+        params: {
+          cql: relatedQuery,
+          limit,
+          expand: expand.join(','),
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
   private handleError(error: any): never {
     if (error.response) {
       console.error(

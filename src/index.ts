@@ -95,7 +95,7 @@ server.addTool({
         content: page.body?.storage?.value || '',
       };
 
-      return simpleResult;
+      return JSON.stringify(simpleResult, null, 2);
     } catch (error) {
       handleError(error);
     }
@@ -457,6 +457,54 @@ server.addTool({
         args.start
       );
       return JSON.stringify(content, null, 2);
+    } catch (error) {
+      handleError(error);
+    }
+  },
+});
+
+// Add MCP tool: Get topically related pages
+server.addTool({
+  name: 'getRelatedPages',
+  description: 'Find pages that are topically related to a given page',
+  parameters: z.object({
+    pageId: z.string().describe('ID of the reference page'),
+    limit: z
+      .number()
+      .optional()
+      .describe('Maximum number of results to return, default is 10'),
+  }),
+  annotations: {
+    readOnlyHint: true,
+    openWorldHint: true,
+  },
+  execute: async args => {
+    try {
+      if (!client) client = initConfluenceClient();
+      const pagesResponse = await client.getTopicallyRelatedPages(
+        args.pageId,
+        args.limit || 10,
+        ['body.storage']
+      );
+
+      // Transform the results to SimplePageResult format
+      const simpleResults = pagesResponse.results.map(page => ({
+        id: page.id,
+        status: page.status,
+        title: page.title,
+        content: page.body?.storage?.value || '',
+      }));
+
+      // Return in the format expected by FastMCP
+      return JSON.stringify(
+        {
+          content: simpleResults,
+          totalCount: pagesResponse.size,
+          relatedToPageId: args.pageId,
+        },
+        null,
+        2
+      );
     } catch (error) {
       handleError(error);
     }
