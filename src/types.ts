@@ -3,6 +3,20 @@
  */
 
 /**
+ * Represents a simplified Confluence page result
+ */
+export interface SimplePageResult {
+  /** The ID of the page */
+  id: string;
+  /** Status of the page, typically "current" */
+  status: string;
+  /** Title of the page */
+  title: string;
+  /** HTML content of the page */
+  content: string;
+}
+
+/**
  * Represents a Confluence page
  */
 export interface ConfluencePage {
@@ -103,9 +117,9 @@ export interface ConfluenceSpace {
   /** Space name */
   name: string;
   /** Space type */
-  type: "global" | "personal";
+  type: 'global' | 'personal';
   /** Space status */
-  status: "current" | "archived";
+  status: 'current' | 'archived';
   /** Space description */
   description?: {
     /** Plain text description */
@@ -113,14 +127,14 @@ export interface ConfluenceSpace {
       /** Description value */
       value: string;
       /** Representation format */
-      representation: "plain";
+      representation: 'plain';
     };
     /** View description */
     view?: {
       /** Description value */
       value: string;
       /** Representation format */
-      representation: "view";
+      representation: 'view';
     };
   };
   /** Space links */

@@ -5,7 +5,7 @@ import {
   ConfluenceSpaceListResponse,
   ConfluenceCommentListResponse,
   ConfluenceAttachmentListResponse,
-  ConfluenceAttachment
+  ConfluenceAttachment,
 } from './types.js';
 
 export class ConfluenceClient {
@@ -20,8 +20,8 @@ export class ConfluenceClient {
     this.client = axios.create({
       baseURL: `https://${domain}/wiki/rest/api`,
       headers: {
-        'Authorization': `Basic ${authToken}`,
-        'Accept': 'application/json',
+        Authorization: `Basic ${authToken}`,
+        Accept: 'application/json',
       },
     });
   }
@@ -32,7 +32,10 @@ export class ConfluenceClient {
    * @param expand Fields to expand in the response (default: body.storage)
    * @returns The page data
    */
-  async getPageById(pageId: string, expand: string[] = ['body.storage']): Promise<ConfluencePage> {
+  async getPageById(
+    pageId: string,
+    expand: string[] = ['body.storage']
+  ): Promise<ConfluencePage> {
     try {
       const response = await this.client.get(`/content/${pageId}`, {
         params: { expand: expand.join(',') },
@@ -72,7 +75,11 @@ export class ConfluenceClient {
    * @param spaceKey Optional space key to limit the search
    * @param expand Fields to expand in the response
    */
-  async getPagesByTitle(title: string, spaceKey?: string, expand: string[] = ['body.storage']): Promise<ConfluencePageListResponse> {
+  async getPagesByTitle(
+    title: string,
+    spaceKey?: string,
+    expand: string[] = ['body.storage']
+  ): Promise<ConfluencePageListResponse> {
     try {
       let cql = `title ~ "${title}"`;
       if (spaceKey) {
@@ -82,7 +89,7 @@ export class ConfluenceClient {
       const response = await this.client.get('/content/search', {
         params: {
           cql,
-          expand: expand.join(',')
+          expand: expand.join(','),
         },
       });
       return response.data;
@@ -98,7 +105,12 @@ export class ConfluenceClient {
    * @param start Start index for pagination
    * @param expand Fields to expand in the response
    */
-  async getPagesBySpaceKey(spaceKey: string, limit: number = 25, start: number = 0, expand: string[] = []): Promise<ConfluencePageListResponse> {
+  async getPagesBySpaceKey(
+    spaceKey: string,
+    limit: number = 25,
+    start: number = 0,
+    expand: string[] = []
+  ): Promise<ConfluencePageListResponse> {
     try {
       const response = await this.client.get('/content', {
         params: {
@@ -106,7 +118,7 @@ export class ConfluenceClient {
           type: 'page',
           limit,
           start,
-          expand: expand.join(',')
+          expand: expand.join(','),
         },
       });
       return response.data;
@@ -120,11 +132,14 @@ export class ConfluenceClient {
    * @param pageId The ID of the parent page
    * @param expand Fields to expand in the response
    */
-  async getPageChildren(pageId: string, expand: string[] = []): Promise<ConfluencePageListResponse> {
+  async getPageChildren(
+    pageId: string,
+    expand: string[] = []
+  ): Promise<ConfluencePageListResponse> {
     try {
       const response = await this.client.get(`/content/${pageId}/child/page`, {
         params: {
-          expand: expand.join(',')
+          expand: expand.join(','),
         },
       });
       return response.data;
@@ -140,14 +155,19 @@ export class ConfluenceClient {
    * @param limit Maximum number of results to return
    * @param start Start index for pagination
    */
-  async getSpaces(type?: 'global' | 'personal', status?: 'current' | 'archived', limit: number = 25, start: number = 0): Promise<ConfluenceSpaceListResponse> {
+  async getSpaces(
+    type?: 'global' | 'personal',
+    status?: 'current' | 'archived',
+    limit: number = 25,
+    start: number = 0
+  ): Promise<ConfluenceSpaceListResponse> {
     try {
       const response = await this.client.get('/space', {
         params: {
           type,
           status,
           limit,
-          start
+          start,
         },
       });
       return response.data;
@@ -162,12 +182,16 @@ export class ConfluenceClient {
    * @param limit Maximum number of results to return
    * @param start Start index for pagination
    */
-  async getPageHistory(pageId: string, limit: number = 25, start: number = 0): Promise<any> {
+  async getPageHistory(
+    pageId: string,
+    limit: number = 25,
+    start: number = 0
+  ): Promise<any> {
     try {
       const response = await this.client.get(`/content/${pageId}/history`, {
         params: {
           limit,
-          start
+          start,
         },
       });
       return response.data;
@@ -183,15 +207,23 @@ export class ConfluenceClient {
    * @param start Start index for pagination
    * @param expand Fields to expand in the response
    */
-  async getPageComments(pageId: string, limit: number = 25, start: number = 0, expand: string[] = []): Promise<ConfluenceCommentListResponse> {
+  async getPageComments(
+    pageId: string,
+    limit: number = 25,
+    start: number = 0,
+    expand: string[] = []
+  ): Promise<ConfluenceCommentListResponse> {
     try {
-      const response = await this.client.get(`/content/${pageId}/child/comment`, {
-        params: {
-          limit,
-          start,
-          expand: expand.join(',')
-        },
-      });
+      const response = await this.client.get(
+        `/content/${pageId}/child/comment`,
+        {
+          params: {
+            limit,
+            start,
+            expand: expand.join(','),
+          },
+        }
+      );
       return response.data;
     } catch (error) {
       this.handleError(error);
@@ -207,17 +239,27 @@ export class ConfluenceClient {
    * @param start Start index for pagination
    * @param expand Fields to expand in the response
    */
-  async getAttachments(pageId: string, filename?: string, mediaType?: string, limit: number = 25, start: number = 0, expand: string[] = []): Promise<ConfluenceAttachmentListResponse> {
+  async getAttachments(
+    pageId: string,
+    filename?: string,
+    mediaType?: string,
+    limit: number = 25,
+    start: number = 0,
+    expand: string[] = []
+  ): Promise<ConfluenceAttachmentListResponse> {
     try {
-      const response = await this.client.get(`/content/${pageId}/child/attachment`, {
-        params: {
-          filename,
-          mediaType,
-          limit,
-          start,
-          expand: expand.join(',')
-        },
-      });
+      const response = await this.client.get(
+        `/content/${pageId}/child/attachment`,
+        {
+          params: {
+            filename,
+            mediaType,
+            limit,
+            start,
+            expand: expand.join(','),
+          },
+        }
+      );
       return response.data;
     } catch (error) {
       this.handleError(error);
@@ -255,13 +297,13 @@ export class ConfluenceClient {
       }
 
       const response = await this.client.get(downloadUrl, {
-        responseType: 'arraybuffer'
+        responseType: 'arraybuffer',
       });
 
       return {
         data: response.data,
         contentType: response.headers['content-type'],
-        filename: attachment.title
+        filename: attachment.title,
       };
     } catch (error) {
       this.handleError(error);
@@ -276,14 +318,20 @@ export class ConfluenceClient {
    * @param start Start index for pagination
    * @param expand Fields to expand in the response
    */
-  async getRecentlyUpdated(spaceKey?: string, type: 'page' | 'blogpost' | 'comment' | 'attachment' = 'page', limit: number = 25, start: number = 0, expand: string[] = []): Promise<ConfluencePageListResponse> {
+  async getRecentlyUpdated(
+    spaceKey?: string,
+    type: 'page' | 'blogpost' | 'comment' | 'attachment' = 'page',
+    limit: number = 25,
+    start: number = 0,
+    expand: string[] = []
+  ): Promise<ConfluencePageListResponse> {
     try {
       const params: any = {
         type,
         limit,
         start,
         expand: expand.join(','),
-        orderby: 'modified'
+        orderby: 'modified',
       };
 
       if (spaceKey) {
@@ -304,12 +352,17 @@ export class ConfluenceClient {
    * @param limit Maximum number of results to return
    * @param start Start index for pagination
    */
-  async getContentByLabel(labelName: string, spaceKey?: string, limit: number = 25, start: number = 0): Promise<ConfluencePageListResponse> {
+  async getContentByLabel(
+    labelName: string,
+    spaceKey?: string,
+    limit: number = 25,
+    start: number = 0
+  ): Promise<ConfluencePageListResponse> {
     try {
       const params: any = {
         labelName,
         limit,
-        start
+        start,
       };
 
       if (spaceKey) {
@@ -330,13 +383,18 @@ export class ConfluenceClient {
    * @param limit Maximum number of results to return
    * @param start Start index for pagination
    */
-  async getContentLabels(contentId: string, prefix?: string, limit: number = 25, start: number = 0): Promise<any> {
+  async getContentLabels(
+    contentId: string,
+    prefix?: string,
+    limit: number = 25,
+    start: number = 0
+  ): Promise<any> {
     try {
       const response = await this.client.get(`/content/${contentId}/label`, {
         params: {
           prefix,
           limit,
-          start
+          start,
         },
       });
       return response.data;
@@ -347,11 +405,17 @@ export class ConfluenceClient {
 
   private handleError(error: any): never {
     if (error.response) {
-      console.error(`Error: ${error.response.status} - ${error.response.statusText}`);
+      console.error(
+        `Error: ${error.response.status} - ${error.response.statusText}`
+      );
       if (error.response.status === 401) {
-        console.error('Authentication failed. Please check your email and API token.');
+        console.error(
+          'Authentication failed. Please check your email and API token.'
+        );
       } else if (error.response.status === 404) {
-        console.error('Resource not found. Please check your Confluence domain and the requested resource.');
+        console.error(
+          'Resource not found. Please check your Confluence domain and the requested resource.'
+        );
       }
     } else {
       console.error('An unexpected error occurred:', error.message);
