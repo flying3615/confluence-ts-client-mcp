@@ -16,9 +16,11 @@ import {
   JiraSearchResponse,
   JiraTransition,
 } from './jiraTypes.js';
+import { JiraIssueExtractor } from './JiraIssueExtractor.js';
 
 export class JiraClient {
   private readonly client: AxiosInstance;
+  private readonly issueExtractor: JiraIssueExtractor;
 
   constructor(
     private readonly domain: string,
@@ -34,8 +36,10 @@ export class JiraClient {
         'Content-Type': 'application/json',
       },
     });
+    this.issueExtractor = new JiraIssueExtractor();
   }
 
+  // TODO: default active sprint, MCP use prompt to rewrite this issue discription
   /**
    * Get a Jira issue by its key
    * @param issueKey The key of the issue to retrieve (e.g., PROJECT-123)
@@ -218,8 +222,8 @@ export class JiraClient {
 
       let issues = response.data.issues;
       if (issueTypes && Array.isArray(issueTypes) && issueTypes.length > 0) {
-        issues = issues.filter(
-          (issue: any) => issueTypes.includes(issue.fields.issuetype?.name)
+        issues = issues.filter((issue: any) =>
+          issueTypes.includes(issue.fields.issuetype?.name)
         );
       }
       return { ...response.data, issues };
@@ -460,5 +464,14 @@ export class JiraClient {
       console.error('An unexpected error occurred:', error.message);
     }
     throw error;
+  }
+
+  /**
+   * Extract formatted details from a Jira issue
+   * @param issue The Jira issue to extract details from
+   * @returns Formatted string with issue details
+   */
+  extractIssueDetails(issue: JiraIssue): string {
+    return this.issueExtractor.extractIssueDetails(issue);
   }
 }
