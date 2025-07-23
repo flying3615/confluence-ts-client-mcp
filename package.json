@@ -8,7 +8,9 @@
   },
   "scripts": {
     "build": "rimraf dist && tsc",
-    "start": "node dist/index.js",
+    "start": "npm run build && node dist/index.js",
+    "test-jira": "npm run build && node dist/jira/JiraClientTest.js",
+    "test-confluence": "npm run build && node dist/confluence/ConfluenceClientTest.js",
     "dev": "fastmcp dev src/index.ts",
     "inspect": "npm run build && fastmcp inspect src/index.ts",
     "prepare": "npm run build",

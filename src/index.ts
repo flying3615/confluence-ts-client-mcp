@@ -2,8 +2,8 @@
 
 import { FastMCP, UserError } from 'fastmcp';
 import { z } from 'zod';
-import { ConfluenceClient } from './ConfluenceClient.js';
-import { SimplePageResult } from './types.js';
+import { ConfluenceClient } from './confluence/ConfluenceClient.js';
+import { SimplePageResult } from './confluence/confluenceTypes.js';
 import 'dotenv/config';
 
 // Initialize Confluence client

@@ -6,7 +6,7 @@ import {
   ConfluenceCommentListResponse,
   ConfluenceAttachmentListResponse,
   ConfluenceAttachment,
-} from './types.js';
+} from './confluenceTypes.js';
 
 export class ConfluenceClient {
   private readonly client: AxiosInstance;
