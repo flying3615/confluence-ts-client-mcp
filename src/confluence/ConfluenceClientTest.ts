@@ -2,7 +2,16 @@
 import { ConfluenceClient } from './ConfluenceClient.js';
 
 import dotenv from 'dotenv';
-dotenv.config();
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+// Get the directory name properly in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const rootDir = path.resolve(__dirname, '../../');
+
+// Load environment variables from the root directory
+dotenv.config({ path: path.resolve(rootDir, '.env') });
 
 const setupClient = () => {
   const { ATLASSIAN_DOMAIN, ATLASSIAN_USER, ATLASSIAN_TOKEN } = process.env;

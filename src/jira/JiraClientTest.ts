@@ -3,7 +3,6 @@ import { JiraClient } from './JiraClient.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import { JiraIssue } from './jiraTypes.js';
 
 // Get the directory name properly in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -81,73 +80,73 @@ async function testJiraClient(client: JiraClient) {
         );
         console.log(`Issue description: ${client.extractIssueDetails(issue)}`);
 
-        // // 5. Get issue comments
-        // console.log('\n--- Getting issue comments ---');
-        // const comments = await client.getIssueComments(issueKey);
-        // console.log(
-        //   `Found ${comments.total} comments, displaying ${comments.comments.length}`
-        // );
-        //
-        // // 6. Get issue transitions
-        // console.log('\n--- Getting issue transitions ---');
-        // const transitions = await client.getIssueTransitions(issueKey);
-        // console.log(
-        //   `Available transitions: ${transitions.map(t => `"${t.name}"`).join(', ')}`
-        // );
-        //
-        // // 7. Get related issues
-        // console.log('\n--- Getting related issues ---');
-        // const relatedIssues = await client.getRelatedIssues(issueKey);
-        // console.log(`Found ${relatedIssues.length} related issues`);
-        // if (relatedIssues.length > 0) {
-        //   console.log(
-        //     `Related issues: ${relatedIssues.map(i => `${i.key} (${i.fields.summary})`).join(', ')}`
-        //   );
-        // }
+        // 5. Get issue comments
+        console.log('\n--- Getting issue comments ---');
+        const comments = await client.getIssueComments(issueKey);
+        console.log(
+          `Found ${comments.total} comments, displaying ${comments.comments.length}`
+        );
+
+        // 6. Get issue transitions
+        console.log('\n--- Getting issue transitions ---');
+        const transitions = await client.getIssueTransitions(issueKey);
+        console.log(
+          `Available transitions: ${transitions.map(t => `"${t.name}"`).join(', ')}`
+        );
+
+        // 7. Get related issues
+        console.log('\n--- Getting related issues ---');
+        const relatedIssues = await client.getRelatedIssues(issueKey);
+        console.log(`Found ${relatedIssues.length} related issues`);
+        if (relatedIssues.length > 0) {
+          console.log(
+            `Related issues: ${relatedIssues.map(i => `${i.key} (${i.fields.summary})`).join(', ')}`
+          );
+        }
       }
 
-      // // 8. Get boards
-      // console.log('\n--- Getting boards ---');
-      // const boards = await client.getBoards(projectKey);
-      // console.log(
-      //   `Found ${boards.values.length} boards for project ${projectKey}`
-      // );
-      //
-      // if (boards.values.length > 0) {
-      //   const boardId = 407;
-      //   console.log(
-      //     `Testing with board: ${boards.values.find(value => value.id == boardId).name} (${boardId})`
-      //   );
-      //
-      //   // 9. Get sprints
-      //   console.log('\n--- Getting sprints ---');
-      //   const sprints = await client.getSprints(boardId, 'active');
-      //   console.log(
-      //     `Found ${sprints.values.length} sprints for board ${boardId}`
-      //   );
-      //
-      //   if (sprints.values.length > 0) {
-      //     const currentSprint = sprints.values[0];
-      //     console.log(`Sprint: ${currentSprint.name} (${currentSprint.id})`);
-      //
-      //     // 10. Get sprint issues
-      //     console.log('\n--- Getting sprint issues ---');
-      //     const sprintIssues = await client.getSprintIssues(
-      //       currentSprint.id,
-      //       0,
-      //       50,
-      //       ['Story', 'Bug']
-      //     );
-      //     console.log(
-      //       `Found ${sprintIssues.issues.length} issues in sprint ${currentSprint.id}`
-      //     );
-      //     sprintIssues.issues.forEach(issue => {
-      //       console.log(
-      //         `- ${issue.key}: ${issue.fields.summary}, Status: ${issue.fields.status?.name}, Type: ${issue.fields.issuetype?.name}`
-      //       );
-      //     });
-      //   }
-      // }
+      // 8. Get boards
+      console.log('\n--- Getting boards ---');
+      const boards = await client.getBoards(projectKey);
+      console.log(
+        `Found ${boards.values.length} boards for project ${projectKey}`
+      );
+
+      if (boards.values.length > 0) {
+        const boardId = 407;
+        console.log(
+          `Testing with board: ${boards.values.find(value => value.id == boardId).name} (${boardId})`
+        );
+
+        // 9. Get sprints
+        console.log('\n--- Getting sprints ---');
+        const sprints = await client.getSprints(boardId, 'active');
+        console.log(
+          `Found ${sprints.values.length} sprints for board ${boardId}`
+        );
+
+        if (sprints.values.length > 0) {
+          const currentSprint = sprints.values[0];
+          console.log(`Sprint: ${currentSprint.name} (${currentSprint.id})`);
+
+          // 10. Get sprint issues
+          console.log('\n--- Getting sprint issues ---');
+          const sprintIssues = await client.getSprintIssues(
+            currentSprint.id,
+            0,
+            50,
+            ['Story', 'Bug']
+          );
+          console.log(
+            `Found ${sprintIssues.issues.length} issues in sprint ${currentSprint.id}`
+          );
+          sprintIssues.issues.forEach(issue => {
+            console.log(
+              `- ${issue.key}: ${issue.fields.summary}, Status: ${issue.fields.status?.name}, Type: ${issue.fields.issuetype?.name}`
+            );
+          });
+        }
+      }
     }
   } catch (error) {
     console.error('Error in Jira client tests:', error.message);
