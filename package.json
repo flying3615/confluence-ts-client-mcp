@@ -11,6 +11,9 @@
     "start": "npm run build && node dist/index.js",
     "test-jira": "npm run build && node dist/jira/JiraClientTest.js",
     "test-confluence": "npm run build && node dist/confluence/ConfluenceClientTest.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "dev": "fastmcp dev src/index.ts",
     "inspect": "npm run build && fastmcp inspect src/index.ts",
     "prepare": "npm run build",
@@ -25,9 +28,9 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "axios": "^1.10.0",
     "@eslint/js": "^9.21.0",
     "@types/node": "^16.18.126",
+    "axios": "^1.10.0",
     "dotenv": "^17.2.0",
     "eslint-config-prettier": "^10.0.2",
     "eslint-plugin-prettier": "^5.2.3",
@@ -37,8 +40,11 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/lodash": "^4.17.16",
+    "jest": "^30.0.5",
     "rimraf": "^6.0.1",
+    "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   }

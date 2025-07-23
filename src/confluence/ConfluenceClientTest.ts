@@ -13,6 +13,8 @@ const rootDir = path.resolve(__dirname, '../../');
 // Load environment variables from the root directory
 dotenv.config({ path: path.resolve(rootDir, '.env') });
 
+// TODO change this to use Jest test
+
 const setupClient = () => {
   const { ATLASSIAN_DOMAIN, ATLASSIAN_USER, ATLASSIAN_TOKEN } = process.env;
 

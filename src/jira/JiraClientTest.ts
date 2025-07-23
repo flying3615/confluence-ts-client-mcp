@@ -12,6 +12,8 @@ const rootDir = path.resolve(__dirname, '../../');
 // Load environment variables from the root directory
 dotenv.config({ path: path.resolve(rootDir, '.env') });
 
+// TODO change this to use Jest test
+
 const setupClient = () => {
   // Try both naming conventions for environment variables
   const domain = process.env.JIRA_DOMAIN || process.env.ATLASSIAN_DOMAIN;
