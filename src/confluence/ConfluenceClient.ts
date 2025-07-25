@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
+import https from 'https';
 import {
   ConfluencePage,
   ConfluencePageListResponse,
@@ -37,8 +38,12 @@ export class ConfluenceClient {
     expand: string[] = ['body.storage']
   ): Promise<ConfluencePage> {
     try {
+      const config = {
+        httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+      };
       const response = await this.client.get(`/content/${pageId}`, {
         params: { expand: expand.join(',') },
+        ...config,
       });
       return response.data;
     } catch (error) {
@@ -60,8 +65,12 @@ export class ConfluenceClient {
    */
   async search(cql: string): Promise<ConfluencePageListResponse> {
     try {
+      const config = {
+        httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+      };
       const response = await this.client.get('/content/search', {
         params: { cql },
+        ...config,
       });
       return response.data;
     } catch (error) {
@@ -112,6 +121,9 @@ export class ConfluenceClient {
     expand: string[] = []
   ): Promise<ConfluencePageListResponse> {
     try {
+      const config = {
+        httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+      };
       const response = await this.client.get('/content', {
         params: {
           spaceKey,
@@ -120,6 +132,7 @@ export class ConfluenceClient {
           start,
           expand: expand.join(','),
         },
+        ...config,
       });
       return response.data;
     } catch (error) {
@@ -137,10 +150,14 @@ export class ConfluenceClient {
     expand: string[] = []
   ): Promise<ConfluencePageListResponse> {
     try {
+      const config = {
+        httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+      };
       const response = await this.client.get(`/content/${pageId}/child/page`, {
         params: {
           expand: expand.join(','),
         },
+        ...config,
       });
       return response.data;
     } catch (error) {

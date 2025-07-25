@@ -17,6 +17,7 @@ import {
   JiraTransition,
 } from './jiraTypes.js';
 import { JiraIssueExtractor } from './JiraIssueExtractor.js';
+import https from 'https';
 
 export class JiraClient {
   private readonly client: AxiosInstance;
@@ -52,8 +53,13 @@ export class JiraClient {
       if (fields && fields.length > 0) {
         params.fields = fields.join(',');
       }
-
-      const response = await this.client.get(`/issue/${issueKey}`, { params });
+      const config = {
+        httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+      };
+      const response = await this.client.get(`/issue/${issueKey}`, {
+        params,
+        ...config,
+      });
       return response.data;
     } catch (error) {
       this.handleError(error);
