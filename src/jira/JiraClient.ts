@@ -40,7 +40,6 @@ export class JiraClient {
     this.issueExtractor = new JiraIssueExtractor();
   }
 
-  // TODO: default active sprint, MCP use prompt to rewrite this issue discription
   /**
    * Get a Jira issue by its key
    * @param issueKey The key of the issue to retrieve (e.g., PROJECT-123)
@@ -60,7 +59,10 @@ export class JiraClient {
         params,
         ...config,
       });
-      return response.data;
+      const issue = response.data;
+      // Attach extracted details as a property for convenience
+      (issue as any).extractedDetails = this.extractIssueDetails(issue);
+      return issue;
     } catch (error) {
       this.handleError(error);
     }
@@ -214,7 +216,7 @@ export class JiraClient {
     startAt: number = 0,
     maxResults: number = 50,
     issueTypes?: string[]
-  ): Promise<JiraIssueListResponse> {
+  ): Promise<any> {
     try {
       const params = {
         startAt,
@@ -232,7 +234,11 @@ export class JiraClient {
           issueTypes.includes(issue.fields.issuetype?.name)
         );
       }
-      return { ...response.data, issues };
+      // Only return summary fields for each issue
+      issues = issues.map((issue: JiraIssue) =>
+        this.issueExtractor.extractIssueSummary(issue)
+      );
+      return { issues };
     } catch (error) {
       this.handleError(error);
     }
@@ -376,7 +382,7 @@ export class JiraClient {
    * @param issueKey The key of the issue to find related issues for
    * @returns List of related issues
    */
-  async getRelatedIssues(issueKey: string): Promise<JiraIssue[]> {
+  async getRelatedIssues(issueKey: string): Promise<any[]> {
     try {
       // First get the issue to extract project, labels, etc.
       const issue = await this.getIssue(issueKey, [
@@ -419,7 +425,10 @@ export class JiraClient {
 
       // Execute search with the constructed JQL
       const searchResult = await this.searchIssues(jql, 0, 10);
-      return searchResult.issues;
+      // Only return summary fields for each related issue
+      return searchResult.issues.map((issue: JiraIssue) =>
+        this.issueExtractor.extractIssueSummary(issue)
+      );
     } catch (error) {
       this.handleError(error);
     }

@@ -4,22 +4,41 @@ import { FastMCP, UserError } from 'fastmcp';
 import { z } from 'zod';
 import { ConfluenceClient } from './confluence/ConfluenceClient.js';
 import { SimplePageResult } from './confluence/confluenceTypes.js';
+import { JiraClient } from './jira/JiraClient.js';
 import 'dotenv/config';
 
-// Initialize Confluence client
-const initConfluenceClient = () => {
-  const { CONFLUENCE_DOMAIN, CONFLUENCE_USER, CONFLUENCE_TOKEN } = process.env;
-  if (!CONFLUENCE_DOMAIN || !CONFLUENCE_USER || !CONFLUENCE_TOKEN) {
+// Initialize clients
+let client: ConfluenceClient;
+let jiraClient: JiraClient;
+
+export enum AtlassianServiceType {
+  Confluence = 'confluence',
+  Jira = 'jira',
+}
+
+function initAtlassianClient<T extends AtlassianServiceType>(
+  type: T
+): T extends AtlassianServiceType.Confluence ? ConfluenceClient : JiraClient {
+  const { ATLASSIAN_DOMAIN, ATLASSIAN_USER, ATLASSIAN_TOKEN } = process.env;
+  if (!ATLASSIAN_DOMAIN || !ATLASSIAN_USER || !ATLASSIAN_TOKEN) {
     throw new UserError(
-      'Please set CONFLUENCE_DOMAIN, CONFLUENCE_USER, and CONFLUENCE_TOKEN in the .env file'
+      'Please set ATLASSIAN_DOMAIN, ATLASSIAN_USER, and ATLASSIAN_TOKEN in the .env file'
     );
   }
-  return new ConfluenceClient(
-    CONFLUENCE_DOMAIN,
-    CONFLUENCE_USER,
-    CONFLUENCE_TOKEN
-  );
-};
+  if (type === AtlassianServiceType.Confluence) {
+    return new ConfluenceClient(
+      ATLASSIAN_DOMAIN,
+      ATLASSIAN_USER,
+      ATLASSIAN_TOKEN
+    ) as any;
+  } else {
+    return new JiraClient(
+      ATLASSIAN_DOMAIN,
+      ATLASSIAN_USER,
+      ATLASSIAN_TOKEN
+    ) as any;
+  }
+}
 
 // Create FastMCP server
 const server = new FastMCP({
@@ -38,9 +57,6 @@ const server = new FastMCP({
   - Get recently updated content
   - Get content by label`,
 });
-
-// Initialize client
-let client: ConfluenceClient;
 
 // Error handling function
 const handleError = (error: any): never => {
@@ -84,7 +100,8 @@ server.addTool({
   },
   execute: async args => {
     try {
-      if (!client) client = initConfluenceClient();
+      if (!client)
+        client = initAtlassianClient(AtlassianServiceType.Confluence);
       const page = await client.getPageById(args.pageId, ['body.storage']);
 
       // Create a simplified page result with only the requested fields
@@ -123,7 +140,8 @@ server.addTool({
   },
   execute: async args => {
     try {
-      if (!client) client = initConfluenceClient();
+      if (!client)
+        client = initAtlassianClient(AtlassianServiceType.Confluence);
       const pages = await client.getPagesByTitle(
         args.title,
         args.spaceKey,
@@ -158,7 +176,8 @@ server.addTool({
   },
   execute: async args => {
     try {
-      if (!client) client = initConfluenceClient();
+      if (!client)
+        client = initAtlassianClient(AtlassianServiceType.Confluence);
       const comments = await client.getPageComments(
         args.pageId,
         args.limit,
@@ -196,7 +215,8 @@ server.addTool({
   },
   execute: async args => {
     try {
-      if (!client) client = initConfluenceClient();
+      if (!client)
+        client = initAtlassianClient(AtlassianServiceType.Confluence);
       const attachments = await client.getAttachments(
         args.pageId,
         args.filename,
@@ -229,7 +249,8 @@ server.addTool({
   },
   execute: async args => {
     try {
-      if (!client) client = initConfluenceClient();
+      if (!client)
+        client = initAtlassianClient(AtlassianServiceType.Confluence);
       const pagesResponse = await client.getTopicallyRelatedPages(
         args.pageId,
         args.limit || 10,
@@ -254,6 +275,152 @@ server.addTool({
         null,
         2
       );
+    } catch (error) {
+      handleError(error);
+    }
+  },
+});
+
+// Add MCP tool: Get Jira issue by key
+server.addTool({
+  name: 'getJiraIssue',
+  description: 'Get a Jira issue by its key',
+  parameters: z.object({
+    issueKey: z
+      .string()
+      .describe('The key of the Jira issue (e.g., PROJECT-123)'),
+    fields: z
+      .array(z.string())
+      .optional()
+      .describe('Optional array of field names to include'),
+  }),
+  execute: async args => {
+    try {
+      if (!jiraClient)
+        jiraClient = initAtlassianClient(AtlassianServiceType.Jira);
+      const issue = await jiraClient.getIssue(args.issueKey, args.fields);
+      // Only return extractedDetails (use type assertion to avoid TS error)
+      const extractedDetails = (issue as any).extractedDetails;
+      return typeof extractedDetails === 'string'
+        ? extractedDetails
+        : JSON.stringify(extractedDetails, null, 2);
+    } catch (error) {
+      handleError(error);
+    }
+  },
+});
+
+// Add MCP tool: Get all issues in a sprint, optionally filtered by a list of issue types
+server.addTool({
+  name: 'getSprintIssues',
+  description:
+    'Get all issues in a sprint, optionally filtered by a list of issue types',
+  parameters: z.object({
+    sprintId: z.number().describe('The ID of the sprint'),
+    startAt: z.number().optional().describe('Starting index for pagination'),
+    maxResults: z
+      .number()
+      .optional()
+      .describe('Maximum number of results to return'),
+    issueTypes: z
+      .array(z.string())
+      .optional()
+      .describe(
+        'Optional array of issue types to filter (e.g., ["Story", "Bug"])'
+      ),
+  }),
+  execute: async args => {
+    try {
+      if (!jiraClient)
+        jiraClient = initAtlassianClient(AtlassianServiceType.Jira);
+      const issues = await jiraClient.getSprintIssues(
+        args.sprintId,
+        args.startAt || 0,
+        args.maxResults || 50,
+        args.issueTypes
+      );
+      return JSON.stringify(issues, null, 2);
+    } catch (error) {
+      handleError(error);
+    }
+  },
+});
+
+// Add MCP tool: Get related issues for a given issue
+server.addTool({
+  name: 'getRelatedIssues',
+  description: 'Find related issues for a given Jira issue',
+  parameters: z.object({
+    issueKey: z
+      .string()
+      .describe('The key of the Jira issue to find related issues for'),
+  }),
+  execute: async args => {
+    try {
+      if (!jiraClient)
+        jiraClient = initAtlassianClient(AtlassianServiceType.Jira);
+      const related = await jiraClient.getRelatedIssues(args.issueKey);
+      return JSON.stringify(related, null, 2);
+    } catch (error) {
+      handleError(error);
+    }
+  },
+});
+
+// Add MCP tool: Get all issues in the active sprint for a board
+server.addTool({
+  name: 'getActiveSprintIssues',
+  description:
+    'Get all issues in the current active sprint for a given Jira board',
+  parameters: z.object({
+    boardId: z.number().describe('The ID of the Jira board'),
+    issueTypes: z
+      .array(z.string())
+      .optional()
+      .describe(
+        'Optional array of issue types to filter (e.g., ["Story", "Bug"])'
+      ),
+    startAt: z.number().optional().describe('Starting index for pagination'),
+    maxResults: z
+      .number()
+      .optional()
+      .describe('Maximum number of results to return'),
+  }),
+  execute: async args => {
+    try {
+      if (!jiraClient)
+        jiraClient = initAtlassianClient(AtlassianServiceType.Jira);
+      // Get the active sprint for the board
+      const sprintsResp = await jiraClient.getSprints(
+        args.boardId,
+        'active',
+        0,
+        1
+      );
+      const activeSprint =
+        sprintsResp.values && sprintsResp.values.length > 0
+          ? sprintsResp.values[0]
+          : null;
+      if (!activeSprint) {
+        return JSON.stringify(
+          { error: 'No active sprint found for this board.' },
+          null,
+          2
+        );
+      }
+      // Use default issueTypes if not provided
+      const issueTypes =
+        args.issueTypes && args.issueTypes.length > 0
+          ? args.issueTypes
+          : ['Story', 'Bug'];
+      // Get issues in the active sprint
+      const issues = await jiraClient.getSprintIssues(
+        activeSprint.id,
+        args.startAt || 0,
+        args.maxResults || 50,
+        issueTypes
+      );
+      return JSON.stringify({ sprint: activeSprint, issues }, null, 2);
     } catch (error) {
       handleError(error);
     }

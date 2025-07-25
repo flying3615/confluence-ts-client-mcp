@@ -96,6 +96,28 @@ export class JiraIssueExtractor {
   }
 
   /**
+   * Extract a summary object with key fields from a Jira issue
+   * @param issue The Jira issue to extract summary from
+   * @returns Object with only key fields
+   */
+  extractIssueSummary(issue: JiraIssue): Record<string, string> {
+    if (!issue || !issue.fields) {
+      return {};
+    }
+    const { key, fields } = issue;
+    return {
+      IssueKey: key,
+      Summary: fields.summary || '',
+      Status: fields.status?.name || '',
+      Type: fields.issuetype?.name || '',
+      Assignee: fields.assignee?.displayName || '',
+      Reporter: fields.reporter?.displayName || '',
+      Points: fields.customfield_10318 || '', // 10318 custom field for story points
+      Priority: fields.priority?.name || '',
+    };
+  }
+
+  /**
    * Extract plain text from Atlassian Document Format (ADF) content
    * Handles various content types: paragraphs, panels, lists, code blocks, etc.
    * @param adf The ADF content object
