@@ -134,17 +134,18 @@ npx ts-node --esm src/index.ts
 
 ### Available MCP Tools
 
+#### Confluence Tools
 - `getPageById`: Get a Confluence page by its ID
-- `searchPagesByTitle`: Search for pages by title
-- `getPagesInSpace`: Get all pages in a specific space
-- `getChildPages`: Get child pages of a page
-- `getAllSpaces`: Get all accessible spaces
-- `getPageHistory`: Get page history versions
-- `getPageComments`: Get page comments
-- `getPageAttachments`: Get page attachments
-- `getRelatedPages`: Find topically related pages
-- `getRecentlyUpdated`: Get recently updated content
-- `getContentByLabel`: Get content by label
+- `searchPagesByTitle`: Search for Confluence pages by title (optionally within a space)
+- `getPageComments`: Get comments on a Confluence page
+- `getPageAttachments`: Get attachments on a Confluence page (with optional filters)
+- `getRelatedPages`: Find pages that are topically related to a given page
+
+#### Jira Tools
+- `getJiraIssue`: Get a Jira issue by its key (e.g., PROJECT-123)
+- `getSprintIssues`: Get all issues in a sprint, optionally filtered by issue types
+- `getRelatedIssues`: Find related issues for a given Jira issue
+- `getActiveSprintIssues`: Get all issues in the current active sprint for a given Jira board
 
 ## Error Handling
 
@@ -157,3 +158,22 @@ All response types are fully documented with TypeScript interfaces for excellent
 ## License
 
 MIT
+
+## Supported Tools
+
+### Confluence Tools
+- **Get page by ID**: Retrieve a Confluence page by its ID.
+- **Search pages by title**: Search for Confluence pages by title (optionally within a space).
+- **Get page comments**: Retrieve comments on a Confluence page.
+- **Get page attachments**: Retrieve attachments on a Confluence page (with optional filters).
+- **Get topically related pages**: Find pages that are topically related to a given page.
+
+### Jira Tools
+- **Get Jira issue by key**: Retrieve a Jira issue by its key (e.g., PROJECT-123).
+- **Get all issues in a sprint**: Retrieve all issues in a sprint, optionally filtered by issue types.
+- **Get related issues**: Find related issues for a given Jira issue.
+- **Get all issues in the active sprint for a board**: Retrieve all issues in the current active sprint for a given Jira board.
+
+---
+
+For usage details and environment setup, see the code and comments in `src/index.ts`.

@@ -44,18 +44,22 @@ function initAtlassianClient<T extends AtlassianServiceType>(
 const server = new FastMCP({
   name: 'ConfluenceAssistant',
   version: '1.0.0',
-  instructions: `This is a Confluence Assistant providing the following functions:
-  - Get page by ID
-  - Search pages by title
-  - Get all pages in a specific space
-  - Get child pages of a page
-  - Get all accessible spaces
-  - Get page history versions
-  - Get page comments
-  - Get page attachments
-  - Download specific attachments
-  - Get recently updated content
-  - Get content by label`,
+  instructions: `This assistant provides the following MCP tools for Atlassian Confluence and Jira:
+
+  Confluence:
+  - getPageById: Get a Confluence page by its ID
+  - searchPagesByTitle: Search for Confluence pages by title (optionally within a space)
+  - getPageComments: Get comments on a Confluence page
+  - getPageAttachments: Get attachments on a Confluence page (with optional filters)
+  - getRelatedPages: Find pages that are topically related to a given page
+  
+  Jira:
+  - getJiraIssue: Get a Jira issue by its key (e.g., PROJECT-123)
+  - getSprintIssues: Get all issues in a sprint, optionally filtered by issue types
+  - getRelatedIssues: Find related issues for a given Jira issue
+  - getActiveSprintIssues: Get all issues in the current active sprint for a given Jira board
+  
+  Refer to the README for parameter details.`,
 });
 
 // Error handling function
